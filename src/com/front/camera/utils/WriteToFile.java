@@ -38,6 +38,7 @@ import android.widget.Toast;
 
 public class WriteToFile {
 
+	private boolean onProccesing=false;
 	private Context mContext;
 	private WindowManager mWindowManager;
 	private final String CAPTURED_DIR = "/front_camera_examples/captured_files";
@@ -105,21 +106,31 @@ public class WriteToFile {
 				.getSystemService(Context.WINDOW_SERVICE);
 	}
 
-	public File getCapturedFileDir() {
+	public void ensureDirectoriIsExist() {
 		File extDir;
-		File exportedFile;
 		extDir = new File(Environment.getExternalStorageDirectory()
+				+ CAPTURED_DIR);
+		Ngelog.v("getStorage: " + Environment.getExternalStorageDirectory());
+		if (!extDir.exists())
+			extDir.mkdirs();
+	}
+
+	public File getCapturedFileDir() {
+		File exportedFile;
+		File extDir = new File(Environment.getExternalStorageDirectory()
 				+ CAPTURED_DIR);
 		long timeMilis = System.currentTimeMillis();
 		fileName = "_" + timeMilis + ".jpg";
-		if (!extDir.exists())
-			extDir.mkdirs();
 		exportedFile = new File(extDir, fileName);
 		return exportedFile;
 	}
 
 	// Camera
 	public void takePicture() {
+		if (onProccesing)
+			return;
+		if (!onProccesing)
+			onProccesing = true;
 		setupCamera();
 		openCamera();
 	}
@@ -156,6 +167,7 @@ public class WriteToFile {
 			}
 		} catch (CameraAccessException | NullPointerException e) {
 			e.printStackTrace();
+			Ngelog.v("Exception: " + e.getLocalizedMessage());
 		}
 
 	}
@@ -171,7 +183,9 @@ public class WriteToFile {
 			manager.openCamera(mCameraId, mStateCallback, mBackgroundHandler);
 		} catch (CameraAccessException e) {
 			e.printStackTrace();
+			Ngelog.v("Exception: " + e.getLocalizedMessage());
 		} catch (InterruptedException e) {
+			Ngelog.v("Exception: " + e.getLocalizedMessage());
 			throw new RuntimeException(
 					"Interrupted while trying to lock camera opening.", e);
 		}
@@ -193,6 +207,7 @@ public class WriteToFile {
 				mImageReader = null;
 			}
 		} catch (InterruptedException e) {
+			Ngelog.v("Exception: " + e.getLocalizedMessage());
 			throw new RuntimeException(
 					"Interrupted while trying to lock camera closing.", e);
 		} finally {
@@ -221,6 +236,7 @@ public class WriteToFile {
 					}, null);
 
 		} catch (CameraAccessException e) {
+			Ngelog.v("Exception: " + e.getLocalizedMessage());
 			e.printStackTrace();
 		}
 	}
@@ -256,6 +272,7 @@ public class WriteToFile {
 					null);
 
 		} catch (CameraAccessException e) {
+			Ngelog.v("Exception: " + e.getLocalizedMessage());
 			e.printStackTrace();
 		}
 	}
@@ -335,14 +352,17 @@ public class WriteToFile {
 				output = new FileOutputStream(mFile);
 				output.write(bytes);
 			} catch (IOException e) {
+				Ngelog.v("Exception: " + e.getLocalizedMessage());
 				e.printStackTrace();
 			} finally {
-				Ngelog.v("finish");
+				Toast.makeText(mContext, "FINISH", Toast.LENGTH_SHORT).show();
 				closeCamera();
 				if (null != output) {
 					try {
+						onProccesing = false;
 						output.close();
 					} catch (IOException e) {
+						Ngelog.v("Exception: " + e.getLocalizedMessage());
 						e.printStackTrace();
 					}
 				}
@@ -370,6 +390,7 @@ public class WriteToFile {
 			mBackgroundThread = null;
 			mBackgroundHandler = null;
 		} catch (InterruptedException e) {
+			Ngelog.v("Exception: " + e.getLocalizedMessage());
 			e.printStackTrace();
 		}
 	}

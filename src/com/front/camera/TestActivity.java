@@ -34,6 +34,7 @@ public class TestActivity extends Activity implements OnClickListener {
 		// TODO Auto-generated method stub
 		super.onResume();
 		wrf.startBackgroundThread();
+		wrf.ensureDirectoriIsExist();
 	}
 
 	@Override
