@@ -19,6 +19,7 @@ import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
+import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
@@ -38,7 +39,7 @@ import android.widget.Toast;
 
 public class WriteToFile {
 
-	private boolean onProccesing=false;
+	private boolean onProccesing = false;
 	private Context mContext;
 	private WindowManager mWindowManager;
 	private final String CAPTURED_DIR = "/front_camera_examples/captured_files";
@@ -226,6 +227,7 @@ public class WriteToFile {
 						@Override
 						public void onConfigured(CameraCaptureSession session) {
 							mCaptureSession = session;
+							Ngelog.v("createCaptureSession");
 							createCaptureRequest();
 						}
 
@@ -243,14 +245,13 @@ public class WriteToFile {
 
 	private void createCaptureRequest() {
 		try {
-
+			Ngelog.v("createCaptureRequest");
 			CaptureRequest.Builder requestBuilder = mCameraDevice
 					.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
 			requestBuilder.addTarget(mImageReader.getSurface());
 
 			// Focus
-			requestBuilder.set(CaptureRequest.CONTROL_AF_MODE,
-					CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
+			requestBuilder.set(CaptureRequest.SHADING_MODE, CaptureRequest.SHADING_MODE_FAST);
 
 			// Orientation
 			int rotation = mWindowManager.getDefaultDisplay().getRotation();
@@ -265,11 +266,12 @@ public class WriteToFile {
 						@NonNull CameraCaptureSession session,
 						@NonNull CaptureRequest request,
 						@NonNull TotalCaptureResult result) {
+					Ngelog.v("onCaptureCompleted: "+System.currentTimeMillis());
 				}
 			};
 
 			mCaptureSession.capture(requestBuilder.build(), CaptureCallback,
-					null);
+					mBackgroundHandler);
 
 		} catch (CameraAccessException e) {
 			Ngelog.v("Exception: " + e.getLocalizedMessage());
@@ -316,7 +318,7 @@ public class WriteToFile {
 
 		@Override
 		public void onImageAvailable(ImageReader reader) {
-
+			Ngelog.v("onImageAvalible");
 			mBackgroundHandler.post(new ImageSaver(mImageReader
 					.acquireLatestImage(), getCapturedFileDir()));
 		}

@@ -1,14 +1,21 @@
 package com.front.camera;
 
-import com.front.camera.utils.WriteToFile;
+import java.io.IOException;
 
 import android.app.Activity;
 import android.content.Context;
+import android.hardware.Camera;
+import android.hardware.Camera.CameraInfo;
+import android.hardware.Camera.PictureCallback;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.Toast;
+
+import com.front.camera.utils.Ngelog;
+import com.front.camera.utils.WriteToFile;
 
 public class TestActivity extends Activity implements OnClickListener {
 
@@ -47,8 +54,10 @@ public class TestActivity extends Activity implements OnClickListener {
 	@Override
 	public void onClick(View v) {
 		// TODO Auto-generated method stub
+		Ngelog.v("Start: " + System.currentTimeMillis());
 		if (v == btnTest) {
 			wrf.takePicture();
 		}
 	}
+
 }
