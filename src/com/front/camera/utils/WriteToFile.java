@@ -13,6 +13,8 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
@@ -128,6 +130,7 @@ public class WriteToFile {
 
 	// Camera
 	public void takePicture() {
+		Ngelog.v("Start: "+System.currentTimeMillis());
 		if (onProccesing)
 			return;
 		if (!onProccesing)
@@ -251,7 +254,8 @@ public class WriteToFile {
 			requestBuilder.addTarget(mImageReader.getSurface());
 
 			// Focus
-			requestBuilder.set(CaptureRequest.SHADING_MODE, CaptureRequest.SHADING_MODE_FAST);
+			requestBuilder.set(CaptureRequest.SHADING_MODE,
+					CaptureRequest.SHADING_MODE_FAST);
 
 			// Orientation
 			int rotation = mWindowManager.getDefaultDisplay().getRotation();
@@ -265,8 +269,7 @@ public class WriteToFile {
 				public void onCaptureCompleted(
 						@NonNull CameraCaptureSession session,
 						@NonNull CaptureRequest request,
-						@NonNull TotalCaptureResult result) {
-					Ngelog.v("onCaptureCompleted: "+System.currentTimeMillis());
+						@NonNull TotalCaptureResult result) {					
 				}
 			};
 
@@ -350,18 +353,21 @@ public class WriteToFile {
 			byte[] bytes = new byte[buffer.remaining()];
 			buffer.get(bytes);
 			FileOutputStream output = null;
+			Bitmap bmp;
 			try {
+				bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
 				output = new FileOutputStream(mFile);
-				output.write(bytes);
+				bmp.compress(Bitmap.CompressFormat.WEBP, 50, output);
+				output.flush();
 			} catch (IOException e) {
 				Ngelog.v("Exception: " + e.getLocalizedMessage());
 				e.printStackTrace();
 			} finally {
-				Toast.makeText(mContext, "FINISH", Toast.LENGTH_SHORT).show();
+				Ngelog.v("Finish: "+System.currentTimeMillis());
 				closeCamera();
 				if (null != output) {
 					try {
-						onProccesing = false;
+						onProccesing = false;						
 						output.close();
 					} catch (IOException e) {
 						Ngelog.v("Exception: " + e.getLocalizedMessage());
