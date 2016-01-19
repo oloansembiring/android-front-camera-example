@@ -1,19 +1,12 @@
 package com.front.camera;
 
-import java.io.IOException;
-
 import android.app.Activity;
 import android.content.Context;
-import android.hardware.Camera;
-import android.hardware.Camera.CameraInfo;
-import android.hardware.Camera.PictureCallback;
+import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.SurfaceView;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-
 import com.front.camera.utils.Ngelog;
 import com.front.camera.utils.WriteToFile;
 
@@ -24,16 +17,18 @@ public class TestActivity extends Activity implements OnClickListener {
 	private String mFileDirectory;
 	private WriteToFile wrf;
 
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
+		mContext = TestActivity.this;		
 		setContentView(R.layout.test_layout);
-		mContext = TestActivity.this;
-		btnTest = (Button) findViewById(R.id.btn_test);
+		btnTest = (Button) findViewById(R.id.btn_test);		
 		btnTest.setOnClickListener(this);
 
-		wrf = new WriteToFile(mContext);
+		wrf = new WriteToFile(mContext);	
+		
 	}
 
 	@Override

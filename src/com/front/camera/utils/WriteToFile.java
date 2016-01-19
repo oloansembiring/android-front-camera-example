@@ -16,6 +16,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
+import android.graphics.Point;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
@@ -34,6 +35,7 @@ import android.os.HandlerThread;
 import android.support.annotation.NonNull;
 import android.util.Size;
 import android.util.SparseIntArray;
+import android.view.Display;
 import android.view.Surface;
 import android.view.WindowManager;
 import android.widget.Switch;
@@ -93,6 +95,9 @@ public class WriteToFile {
 	/**
 	 * An additional thread for running tasks that shouldn't block the UI.
 	 */
+	private Display mDisplay;
+	private int mWidth;
+	private int mHeight;
 	private HandlerThread mBackgroundThread;
 	private Handler mBackgroundHandler;
 
@@ -107,6 +112,12 @@ public class WriteToFile {
 		this.mContext = mContext;
 		mWindowManager = (WindowManager) mContext
 				.getSystemService(Context.WINDOW_SERVICE);
+		mDisplay = mWindowManager.getDefaultDisplay();
+		Point size = new Point();
+		mDisplay.getSize(size);
+		mWidth = size.x;
+		mHeight = size.y;
+
 	}
 
 	public void ensureDirectoriIsExist() {
@@ -130,7 +141,7 @@ public class WriteToFile {
 
 	// Camera
 	public void takePicture() {
-		Ngelog.v("Start: "+System.currentTimeMillis());
+		Ngelog.v("Start: " + System.currentTimeMillis());
 		if (onProccesing)
 			return;
 		if (!onProccesing)
@@ -163,8 +174,8 @@ public class WriteToFile {
 						new CompareSizesByArea());
 
 				mCameraId = cameraId;
-				mImageReader = ImageReader.newInstance(largest.getWidth(),
-						largest.getHeight(), ImageFormat.JPEG, 2);
+				mImageReader = ImageReader.newInstance(mWidth,
+						mHeight, ImageFormat.JPEG, 2);
 				mImageReader.setOnImageAvailableListener(
 						mOnImageAvailableListener, mBackgroundHandler);
 
@@ -269,7 +280,7 @@ public class WriteToFile {
 				public void onCaptureCompleted(
 						@NonNull CameraCaptureSession session,
 						@NonNull CaptureRequest request,
-						@NonNull TotalCaptureResult result) {					
+						@NonNull TotalCaptureResult result) {
 				}
 			};
 
@@ -357,17 +368,17 @@ public class WriteToFile {
 			try {
 				bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
 				output = new FileOutputStream(mFile);
-				bmp.compress(Bitmap.CompressFormat.WEBP, 50, output);
+				bmp.compress(Bitmap.CompressFormat.JPEG, 50, output);
 				output.flush();
 			} catch (IOException e) {
 				Ngelog.v("Exception: " + e.getLocalizedMessage());
 				e.printStackTrace();
 			} finally {
-				Ngelog.v("Finish: "+System.currentTimeMillis());
+				Ngelog.v("Finish: " + System.currentTimeMillis());
 				closeCamera();
 				if (null != output) {
 					try {
-						onProccesing = false;						
+						onProccesing = false;
 						output.close();
 					} catch (IOException e) {
 						Ngelog.v("Exception: " + e.getLocalizedMessage());
